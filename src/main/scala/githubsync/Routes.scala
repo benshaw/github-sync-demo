@@ -2,7 +2,7 @@ package githubsync
 
 import githubsync.ErrorHandler.HttpErrorHandler
 import githubsync.domain.GitHubApi.GitHubApiError
-import githubsync.domain.{Repository, StarredRepositoriesService, User}
+import githubsync.domain.{Repository, RepositoryService, User}
 import cats.Applicative
 import cats.effect.Sync
 import cats.syntax.all._
@@ -15,16 +15,13 @@ import org.http4s.{EntityEncoder, HttpRoutes}
 
 object Routes {
 
-  def contributorRoutes[F[_]](starred: StarredRepositoriesService[F])(implicit S:Sync[F], H: HttpErrorHandler[F, GitHubApiError]): HttpRoutes[F] = {
+  def contributorRoutes[F[_]](starred: RepositoryService[F])(implicit S:Sync[F], H: HttpErrorHandler[F, GitHubApiError]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dsl._
 
     val routes = HttpRoutes.of[F] {
       case GET -> Root / "org" / org / "starred" =>
-        for {
-          contributors <- starred.get.run(org)
-          resp <- Ok(contributors.asJson)
-        } yield resp
+        Ok(starred.get(org).map(_.asJson))
     }
 
     H.handle(routes)

@@ -1,4 +1,4 @@
-package githubsync.interpreters.githubapi.models
+package githubsync.interpreters.upstream.models
 
 import cats.effect.Sync
 import io.circe.Decoder
@@ -13,9 +13,9 @@ import org.http4s.circe.jsonOf
 // generated from https://json2caseclass.cleverapps.io/
 
 case class GitHubStarredRepositoryOwner(
-                  login: String,
-                  id: Double,
-                  node_id: String,
+                  login: Option[String],
+                  id: Option[Double],
+                  node_id: Option[String],
                   avatar_url: Option[String],
                   gravatar_id: Option[String],
                   url: Option[String],
@@ -40,10 +40,10 @@ case class GitHubStarredRepositoryPermissions(
                       )
 
 case class GitHubStarredRepository(
-                           id: Double,
-                           node_id: String,
-                           name: String,
-                           full_name: String,
+                           id: Option[Double],
+                           node_id: Option[String],
+                           name: Option[String],
+                           full_name: Option[String],
                            owner: GitHubStarredRepositoryOwner,
                            `private`: Option[Boolean],
                            html_url: String,

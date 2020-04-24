@@ -1,4 +1,4 @@
-package githubsync.interpreters.githubapi.models
+package githubsync.interpreters.upstream.models
 
 import cats.effect.Sync
 import io.circe.Decoder
@@ -9,7 +9,7 @@ import org.http4s.circe.jsonOf
 // generated from https://json2caseclass.cleverapps.io/
 case class GitHubOwner(login: String,
                        id: Double,
-                       node_id: String,
+                       node_id: Option[String],
                        avatar_url: Option[String] = None,
                        gravatar_id: Option[String] = None,
                        url: Option[String] = None,

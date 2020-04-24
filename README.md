@@ -53,12 +53,16 @@ sbt test
 
 ## Design
 
-* Http4s giter [template](https://github.com/http4s/http4s.g8)
+* [Http4s](https://github.com/http4s/http4s) giter [template](https://github.com/http4s/http4s.g8)
+* Cats and Cats-Effect
+* Doobie
+* [Flyway](https://github.com/flyway/flyway) for Migrations
 * [Tagless Final pattern](https://scalac.io/tagless-final-pattern-for-scala-code/) for core domain
 * [Onion architecture](https://jeffreypalermo.com/2008/07/the-onion-architecture-part-1/)
 * Inspiration from the scala [petstore](https://github.com/pauljamescleary/scala-pet-store)
 * Higher kinded types 
 * Error handling with classy optics inspired by [Gabriel Volpe](https://typelevel.org/blog/2018/08/25/http4s-error-handling-mtl.html)
+
 
 ## License
 

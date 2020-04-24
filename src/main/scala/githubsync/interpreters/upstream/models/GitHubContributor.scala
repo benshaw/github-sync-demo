@@ -1,4 +1,4 @@
-package githubsync.interpreters.githubapi.models
+package githubsync.interpreters.upstream.models
 
 import cats.effect.Sync
 import io.circe.Decoder
@@ -9,10 +9,10 @@ import org.http4s.circe.jsonOf
 // generated from https://json2caseclass.cleverapps.io/
 
 case class GitHubContributor(login: String,
-                             id: Int,
-                             node_id: String,
-                             `type`: String,
-                             contributions: Int,
+                             id: Option[Int],
+                             node_id: Option[String],
+                             `type`: Option[String],
+                             contributions: Option[Int],
                              site_admin: Option[Boolean]= None,
                              avatar_url: Option[String] = None,
                              gravatar_id: Option[String] = None,

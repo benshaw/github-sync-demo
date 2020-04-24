@@ -5,24 +5,35 @@ import cats.{Monad, MonadError}
 import cats.data.Kleisli
 import cats.effect.Sync
 import cats.implicits._
+import fs2.Stream
 
-abstract class StarredRepositoriesService[F[_]](github: GitHubApiAlgebra[F]) {
-  def get: Kleisli[F, String, List[Repository]]
-  //def add: Kleisli[F, String, List[Repository]]
+abstract class RepositoryService[F[_]](github: GitHubApiAlgebra[F]) {
+  def get(org:String): Stream[F, Repository]
+  //def getStarred
+  //def addStar: Kleisli[F, String, List[Repository]]
 }
 
 sealed trait ContributorError extends Exception
 
-object StarredRepositoriesService {
+object RepositoryService {
 
   case class DownStreamError(e: String) extends ContributorError
 
   case class NotFound(e: String) extends ContributorError
 
-  def create[F[_]](github: GitHubApiAlgebra[F])(implicit F: Monad[F], E: MonadError[F, Throwable]): StarredRepositoriesService[F] = new StarredRepositoriesService(github) {
+  def create[F[_]](api: GitHubApiAlgebra[F])(implicit F: Monad[F], E: MonadError[F, Throwable]): RepositoryService[F] = new RepositoryService(api) {
 
-    private val getRepositories: Kleisli[F, String, List[Repository]] = Kleisli((orgName: String) =>
-      github
+    def get(org:String): Stream[F, Repository] =
+      for {
+        repo <- api.repositories(org)
+        cont <- api.contributors(repo).filterNot(_.name.contains("[bot]"))
+        starred <- api.starred(cont)
+      } yield repo
+
+
+    /*
+    private val getRepositories = Kleisli((orgName: String) =>
+      api
         .repositories(orgName)
         /*.adaptError {
         //! \todo LOG
@@ -31,7 +42,7 @@ object StarredRepositoriesService {
     )
 
     private val getContributors = (r: Repository) =>
-      github.contributors(r)
+      api.contributors(r)
         .recover {
           case ResourceNotFound(_) => List.empty
         }
@@ -39,9 +50,9 @@ object StarredRepositoriesService {
         .adaptError {
           case e => DownStreamError(e.toString)
         }*/
-    
+
     private val getStarred = (r: User) =>
-      github.starred(r)
+      api.starred(r)
         /*.recover {
           case ResourceNotFound(_) => List.empty
         }
@@ -55,7 +66,7 @@ object StarredRepositoriesService {
         .map(sortContributorList)
     )
     
-    private val getUsersStarredRepositories: Kleisli[F, List[User], List[Repository]] = Kleisli((users: List[User]) =>
+    private val getUsersStarredRepositories: Kleisli[Nothing, Any, Nothing] = Kleisli((users: Stream[User]) =>
       users
           .filterNot(_.name.contains("[bot]"))
           .flatTraverse(getStarred)
@@ -73,5 +84,6 @@ object StarredRepositoriesService {
     override val get: Kleisli[F, String, List[Repository]] =
       getRepositories andThen getRepositoryContributors andThen getUsersStarredRepositories
 
+*/
   }
 }

@@ -1,6 +1,6 @@
 package githubsync
 import githubsync.TestData._
-import githubsync.domain.{User, StarredRepositoriesService}
+import githubsync.domain.{User, RepositoryService}
 import cats.effect.IO
 import cats.effect._
 import io.circe.{Decoder, Json}
@@ -34,14 +34,14 @@ class ServerTest extends Specification {
     }
 
     "returns 404" >> {
-      val cont: StarredRepositoriesService[IO] = StarredRepositoriesService.create[IO](notFoundApi)
+      val cont: RepositoryService[IO] = RepositoryService.create[IO](notFoundApi)
       val req = Request[IO](Method.GET, uri"/org/someorg/contributors")
       val r = Routes.contributorRoutes(cont).orNotFound(req).unsafeRunSync()
       r.status must beEqualTo(Status.BadRequest)
     }
 
     "return 500" >>{
-      val cont: StarredRepositoriesService[IO] = StarredRepositoriesService.create[IO](errorApi)
+      val cont: RepositoryService[IO] = RepositoryService.create[IO](errorApi)
       val req = Request[IO](Method.GET, uri"/org/someorg/contributors")
       val r = Routes.contributorRoutes(cont).orNotFound(req).unsafeRunSync()
       r.status must beEqualTo(Status.InternalServerError)
@@ -50,6 +50,6 @@ class ServerTest extends Specification {
 
   implicit val contDecoder: Decoder[User] = deriveDecoder[User]
   implicit def contEntityDecoder: EntityDecoder[IO, List[User]] = jsonOf
-  val testService: StarredRepositoriesService[IO] = StarredRepositoriesService.create[IO](testApi)
+  val testService: RepositoryService[IO] = RepositoryService.create[IO](testApi)
 
 }

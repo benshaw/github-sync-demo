@@ -5,8 +5,8 @@ import githubsync.domain.GitHubApi._
 import githubsync.interpreters.{GitHubLicense, GitHubOwner, GitHubPermissions, GitHubRepository}
 import cats.Applicative
 import cats.effect.{IO, Sync}
-import githubsync.interpreters.githubapi.models.{GitHubContributor, GitHubLicense, GitHubOwner, GitHubPermissions, GitHubRepository}
-import githubsync.interpreters.githubapi.{GitHubLicense, GitHubOwner, GitHubPermissions, GitHubRepository}
+import githubsync.interpreters.upstream.models.{GitHubContributor, GitHubLicense, GitHubOwner, GitHubPermissions, GitHubRepository}
+import githubsync.interpreters.upstream.{GitHubLicense, GitHubOwner, GitHubPermissions, GitHubRepository}
 import io.circe.{Decoder, Encoder}
 import org.http4s.{EntityDecoder, EntityEncoder}
 import org.http4s.circe.jsonEncoderOf
@@ -89,7 +89,7 @@ object TestData {
       `type` = "User",
       contributions = num)
 
-  def generateRepo(name: String, owner: String): GitHubRepository =
+  def generateRepo(name: String, owner: String): Repository =
     GitHubRepository(id = Random.nextDouble(), node_id = Random.nextString(5), name = name, full_name = name,
       owner = GitHubOwner(login = owner, id = Random.nextDouble(), node_id = name),
       `private` = false)
@@ -103,11 +103,11 @@ object TestData {
   implicit def contEntityEncoder[F[_] : Applicative]: EntityEncoder[F, List[User]] = jsonEncoderOf
   implicit val contDecoder: Decoder[User] = deriveDecoder[User]
   implicit def contEntityDecoder[F[_] : Sync]: EntityDecoder[F, List[User]] = jsonOf
-  implicit val ghEncoder: Encoder[GitHubRepository] = deriveEncoder[GitHubRepository]
+  implicit val ghEncoder: Encoder[Repository] = deriveEncoder[Repository]
   implicit val ghoEncoder: Encoder[GitHubOwner] = deriveEncoder[GitHubOwner]
   implicit val ghlEncoder: Encoder.AsObject[GitHubLicense] = deriveEncoder[GitHubLicense]
   implicit val ghpEncoder: Encoder.AsObject[GitHubPermissions] = deriveEncoder[GitHubPermissions]
-  implicit def ghEntityEncoder[F[_] : Applicative]: EntityEncoder[F, List[GitHubRepository]] = jsonEncoderOf
+  implicit def ghEntityEncoder[F[_] : Applicative]: EntityEncoder[F, List[Repository]] = jsonEncoderOf
   implicit val conEncoder: Encoder.AsObject[GitHubContributor] = deriveEncoder[GitHubContributor]
   implicit def conEntityEncoder[F[_] : Applicative]: EntityEncoder[F, List[GitHubContributor]] = jsonEncoderOf
 

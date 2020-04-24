@@ -10,7 +10,7 @@ import org.http4s.dsl.io._
 import io.circe.syntax._
 import org.http4s.circe._
 import eu.timepit.refined.auto._
-import githubsync.interpreters.githubapi.GitHubApiInterpreter
+import githubsync.interpreters.upstream.GitHubApiInterpreter
 
 //! \todo get case class matching working
 //import scala.language.experimental.macros
@@ -19,7 +19,7 @@ import githubsync.interpreters.githubapi.GitHubApiInterpreter
 class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org.specs2.matcher.MatcherMacros {
 
   import TestData._
-  import githubsync.interpreters.githubapi.GitHubApiInterpreter._
+  import githubsync.interpreters.upstream.GitHubApiInterpreter._
 
   "GitHubApiInterpreter" >> {
 

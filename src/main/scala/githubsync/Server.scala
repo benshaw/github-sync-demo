@@ -1,7 +1,7 @@
 package githubsync
 
-import githubsync.domain.StarredRepositoriesService
-import githubsync.interpreters.githubapi.GitHubApiInterpreter.{GitHubApiConfig, GitHubToken, GitHubUri}
+import githubsync.domain.RepositoryService
+import githubsync.interpreters.upstream.GitHubApiInterpreter.{GitHubApiConfig, GitHubToken, GitHubUri}
 import cats.effect.{ConcurrentEffect, ContextShift, Timer}
 import fs2.Stream
 import org.http4s.client.blaze.BlazeClientBuilder
@@ -15,7 +15,7 @@ import cats.implicits._
 import ciris._
 import ciris.refined._
 import eu.timepit.refined.auto._
-import githubsync.interpreters.githubapi.GitHubApiInterpreter
+import githubsync.interpreters.upstream.GitHubApiInterpreter
 
 
 object Server {
@@ -39,7 +39,7 @@ object Server {
       client <- BlazeClientBuilder[F](global).stream
       loggedClient = if(conf.clientLogging){ org.http4s.client.middleware.Logger(true, true, _ => false)(client)} else client
       githubInterpreter = GitHubApiInterpreter.create(loggedClient, conf.gitHubApiConfig)
-      contributorsService = StarredRepositoriesService.create(githubInterpreter)
+      contributorsService = RepositoryService.create(githubInterpreter)
 
       httpApp = (
         Routes.contributorRoutes[F](contributorsService)

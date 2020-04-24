@@ -1,9 +1,11 @@
-package githubsync.interpreters.githubapi
+package githubsync.interpreters.upstream
 
 import cats.effect.Sync
 import cats.implicits._
 import githubsync.domain.GitHubApi._
 import org.http4s._
+import fs2.{Pipe, Pure, RaiseThrowable, Stream, text}
+
 
 //! Raise errors using the GitHubError ADT
 object GitHubUtilityErrors {
@@ -21,11 +23,11 @@ object GitHubUtilityErrors {
 
   }
 
-  implicit class UriError[F[_]](s: String)(implicit F: Sync[F]) {
-    def asUri(): F[Uri] =
+  implicit class UriError[F[_]](s: String)(implicit F: RaiseThrowable[F]) {
+    def asUri(): Stream[F, Uri] =
       Uri.fromString(s) match {
-        case Right(s) => F.pure(s)
-        case Left(e) => F.raiseError(UriParseError(e.message))
+        case Right(s) => Stream(s)
+        case Left(e) => Stream.raiseError(UriParseError(e.message))
       }
   }
 

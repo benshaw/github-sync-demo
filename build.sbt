@@ -4,7 +4,10 @@ val Specs2Version = "4.8.3"
 val LogbackVersion = "1.2.3"
 val RefinedVersion = "0.9.13"
 val MtlVersion = "0.4.0"
-val CirisVersion ="1.0.4"
+val CirisVersion = "1.0.4"
+val DoobieVersion = "0.8.8"
+val FlywayVersion = "6.4.0"
+val Fs2Version = "2.2.1"
 
 lazy val root = (project in file("."))
   .settings(
@@ -23,7 +26,13 @@ lazy val root = (project in file("."))
       "eu.timepit" %% "refined" % RefinedVersion,
       "is.cir" %% "ciris" % CirisVersion,
       "is.cir" %% "ciris-refined" % CirisVersion,
-      "com.olegpy" %% "meow-mtl-core" % MtlVersion
+      "com.olegpy" %% "meow-mtl-core" % MtlVersion,
+      "org.flywaydb" % "flyway-core" % FlywayVersion,
+      "org.tpolecat" %% "doobie-core" % DoobieVersion,
+      "org.tpolecat" %% "doobie-postgres" % DoobieVersion,
+      "co.fs2" %% "fs2-core" % Fs2Version,
+      "co.fs2" %% "fs2-io" % Fs2Version,
+      "io.circe" %% "circe-fs2" % CirceVersion
     ),
     addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full),
     addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.0")
