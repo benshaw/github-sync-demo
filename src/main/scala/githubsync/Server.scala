@@ -1,8 +1,8 @@
 package githubsync
 
-import githubsync.domain.RepositoryService
+import githubsync.domain.{GitHubApi, RepositoryService}
 import githubsync.interpreters.upstream.GitHubApiInterpreter.{GitHubApiConfig, GitHubToken, GitHubUri}
-import cats.effect.{ConcurrentEffect, ContextShift, Timer}
+import cats.effect.{ConcurrentEffect, ContextShift, IO, Timer}
 import fs2.Stream
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.server.blaze.BlazeServerBuilder
@@ -15,6 +15,8 @@ import cats.implicits._
 import ciris._
 import ciris.refined._
 import eu.timepit.refined.auto._
+import githubsync.domain.GitHubApi.{GitHubApiAlgebra, GitHubPersistentStoreAlgebra}
+import githubsync.interpreters.persistent.GitHubPersistentStoreInterpreter
 import githubsync.interpreters.upstream.GitHubApiInterpreter
 
 
@@ -33,13 +35,16 @@ object Server {
         GitHubApiConfig(uri, token))
     }
 
+
+
   def stream[F[_]: ConcurrentEffect](conf: ServerConfig)(implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
 
     for {
       client <- BlazeClientBuilder[F](global).stream
       loggedClient = if(conf.clientLogging){ org.http4s.client.middleware.Logger(true, true, _ => false)(client)} else client
-      githubInterpreter = GitHubApiInterpreter.create(loggedClient, conf.gitHubApiConfig)
-      contributorsService = RepositoryService.create(githubInterpreter)
+      api: GitHubApiAlgebra[F] = GitHubApiInterpreter.create(loggedClient, conf.gitHubApiConfig)
+      db: GitHubPersistentStoreAlgebra[F] = GitHubPersistentStoreInterpreter.create(Database.xa)
+      contributorsService = RepositoryService.create(api,db)
 
       httpApp = (
         Routes.contributorRoutes[F](contributorsService)

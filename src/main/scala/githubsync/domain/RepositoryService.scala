@@ -1,6 +1,6 @@
 package githubsync.domain
 
-import GitHubApi.{ErrorRetrievingJson, GitHubApiAlgebra, GitHubApiError, ResourceNotFound}
+import GitHubApi.{ErrorRetrievingJson, GitHubApiAlgebra, GitHubApiError, GitHubPersistentStoreAlgebra, ResourceNotFound}
 import cats.{Monad, MonadError}
 import cats.data.Kleisli
 import cats.effect.Sync
@@ -21,14 +21,26 @@ object RepositoryService {
 
   case class NotFound(e: String) extends ContributorError
 
-  def create[F[_]](api: GitHubApiAlgebra[F])(implicit F: Monad[F], E: MonadError[F, Throwable]): RepositoryService[F] = new RepositoryService(api) {
+  def create[F[_]](api: GitHubApiAlgebra[F], persist: GitHubPersistentStoreAlgebra[F])(implicit F: Monad[F], E: MonadError[F, Throwable]): RepositoryService[F] = new RepositoryService(api) {
 
-    def get(org:String): Stream[F, Repository] =
-      for {
+    def get(org:String): Stream[F, Repository] = {
+
+      /*
+      val repo: Stream[F, Repository] = for {
         repo <- api.repositories(org)
-        cont <- api.contributors(repo).filterNot(_.name.contains("[bot]"))
-        starred <- api.starred(cont)
+
+        //cont <- api.contributors(repo).filterNot(_.name.contains("[bot]"))
+        //starred <- api.starred(cont)
       } yield repo
+*/
+
+      //! \todo async
+      api.repositories(org)
+        .chunkN(10) //\todo config
+        .evalMap(c => persist.addRepositories(c))
+        .flatMap(_ => persist.repositories(org))
+
+    }
 
 
     /*

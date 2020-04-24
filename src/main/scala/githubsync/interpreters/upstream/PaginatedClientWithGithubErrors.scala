@@ -52,14 +52,11 @@ object PaginatedClientWithGithubErrors {
       //! Get the first page of data and headers
       val pg1: Stream[F, Rep] = requestPage(1)
       //! Build a list of remaining pages using the data received in the header
-      val remainingPages: Stream[F, Rep] = pg1.flatMap(range(_).flatMap(requestPage))
+      val remainingPages: Stream[F, Rep] = pg1.flatMap(range(_).flatMap(requestPage)) //! \todo can these be run concurrently ?
       val result: Stream[F, Json] = (pg1 ++ remainingPages).flatMap(_.body.chunks.unwrapJsonArray)
 
       result.through(js)
-
     }
-
-
 
     private def extractPage(l: LinkValue): Option[Int] = {
       val regex = "(?<=page=)([0-9*])".r
