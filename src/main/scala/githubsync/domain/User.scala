@@ -1,4 +1,8 @@
 package githubsync.domain
 
-case class User(name: String, repo:String)
+object user{
+  case class User(name: String, repo:String)
+
+  case class UserError(e: Throwable) extends Throwable
+}
 

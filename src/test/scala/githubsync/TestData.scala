@@ -1,7 +1,7 @@
 package githubsync
 
 import githubsync.domain.{Repository, User}
-import githubsync.domain.GitHubApi._
+import githubsync.algebras.GitHubApi._
 import githubsync.interpreters.{GitHubLicense, GitHubOwner, GitHubPermissions, GitHubRepository}
 import cats.Applicative
 import cats.effect.{IO, Sync}

@@ -2,7 +2,7 @@ package githubsync.interpreters.upstream
 
 import cats.effect.Sync
 import cats.implicits._
-import githubsync.domain.GitHubApi._
+import githubsync.algebras.GitHubApi._
 import org.http4s._
 import fs2.{Pipe, Pure, RaiseThrowable, Stream, text}
 

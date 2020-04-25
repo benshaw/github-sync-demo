@@ -1,11 +1,13 @@
 package githubsync
 
 import githubsync.ErrorHandler.HttpErrorHandler
-import githubsync.domain.GitHubApi.GitHubApiError
-import githubsync.domain.{Repository, RepositoryService, User}
+import githubsync.algebras.GitHubApi.GitHubApiError
+import githubsync.domain.user._
+import githubsync.domain.repository._
 import cats.Applicative
 import cats.effect.Sync
 import cats.syntax.all._
+import githubsync.interpreters.service.RepositoryService
 import io.circe.Encoder
 import io.circe.generic.semiauto.deriveEncoder
 import io.circe.syntax._

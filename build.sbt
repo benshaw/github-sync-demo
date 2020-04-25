@@ -8,6 +8,7 @@ val CirisVersion = "1.0.4"
 val DoobieVersion = "0.8.8"
 val FlywayVersion = "6.4.0"
 val Fs2Version = "2.2.1"
+val Log4Cats ="1.0.1"
 
 lazy val root = (project in file("."))
   .settings(
@@ -32,7 +33,8 @@ lazy val root = (project in file("."))
       "org.tpolecat" %% "doobie-postgres" % DoobieVersion,
       "co.fs2" %% "fs2-core" % Fs2Version,
       "co.fs2" %% "fs2-io" % Fs2Version,
-      "io.circe" %% "circe-fs2" % CirceVersion
+      "io.circe" %% "circe-fs2" % CirceVersion,
+        "io.chrisdavenport" %% "log4cats-slf4j" % Log4Cats
     ),
     addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full),
     addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.0")

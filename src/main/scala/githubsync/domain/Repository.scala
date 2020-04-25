@@ -1,3 +1,9 @@
 package githubsync.domain
 
-case class Repository(name: String, owner: String)
+object repository{
+
+  case class Repository(name: String, owner: String)
+
+  case class RepositoryError(e: Throwable) extends Throwable
+}
+

@@ -1,12 +1,11 @@
 package githubsync
 
-import githubsync.domain.{GitHubApi, RepositoryService}
 import githubsync.interpreters.upstream.GitHubApiInterpreter.{GitHubApiConfig, GitHubToken, GitHubUri}
 import cats.effect.{ConcurrentEffect, ContextShift, IO, Timer}
 import fs2.Stream
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.server.blaze.BlazeServerBuilder
-import org.http4s.server.middleware.Logger
+import org.http4s.server.middleware
 import com.olegpy.meow.hierarchy._
 
 import scala.concurrent.ExecutionContext.global
@@ -15,9 +14,12 @@ import cats.implicits._
 import ciris._
 import ciris.refined._
 import eu.timepit.refined.auto._
-import githubsync.domain.GitHubApi.{GitHubApiAlgebra, GitHubPersistentStoreAlgebra}
+import githubsync.algebras.GitHubApi.{GitHubApiAlgebra, GitHubPersistentStoreAlgebra}
 import githubsync.interpreters.persistent.DoobiePersistentStoreInterpreter
+import githubsync.interpreters.service.RepositoryService
 import githubsync.interpreters.upstream.GitHubApiInterpreter
+import io.chrisdavenport.log4cats.Logger
+import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 
 
 object Server {
@@ -37,7 +39,8 @@ object Server {
 
 
 
-  def stream[F[_]: ConcurrentEffect](conf: ServerConfig)(implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
+  def stream[F[_]: ConcurrentEffect : Logger](conf: ServerConfig)(implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
+
 
     for {
       client <- BlazeClientBuilder[F](global).stream
@@ -50,7 +53,7 @@ object Server {
         Routes.contributorRoutes[F](contributorsService)
       ).orNotFound
 
-      loggedHttpApp = if(conf.appLogging){Logger.httpApp(true, true)(httpApp)} else httpApp
+      loggedHttpApp = if(conf.appLogging){middleware.Logger.httpApp(true, true)(httpApp)} else httpApp
 
       exitCode <- BlazeServerBuilder[F]
         .bindHttp(8080, "0.0.0.0")

@@ -4,8 +4,9 @@ import cats.effect.Sync
 import cats.implicits._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.collection.MinSize
-import githubsync.domain.GitHubApi.GitHubApiAlgebra
-import githubsync.domain.{Repository, User}
+import githubsync.algebras.GitHubApi.GitHubApiAlgebra
+import githubsync.domain.repository._
+import githubsync.domain.user._
 import githubsync.interpreters.upstream.domain.{GitHubContributor, GitHubLicense, GitHubOwner, GitHubPermissions, GitHubRepository, GitHubStarGazer, GitHubStarredRepository}
 import io.circe.{Decoder, Json}
 import io.circe.generic.semiauto._

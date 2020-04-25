@@ -1,6 +1,6 @@
 package githubsync
 import githubsync.TestData._
-import githubsync.domain.{User, RepositoryService}
+import githubsync.domain.User
 import cats.effect.IO
 import cats.effect._
 import io.circe.{Decoder, Json}
@@ -16,6 +16,7 @@ import org.http4s.implicits._
 import org.specs2.matcher.MatchResult
 import githubsync.ErrorHandler._
 import com.olegpy.meow.hierarchy._
+import githubsync.interpreters.service.RepositoryService
 import io.circe.generic.semiauto.deriveDecoder
 
 class ServerTest extends Specification {
