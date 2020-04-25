@@ -8,7 +8,7 @@ import org.http4s.dsl.Http4sDsl
 import cats.implicits._
 import org.http4s.circe._
 import io.circe.syntax._
-import githubsync.algebras.GitHubApi._
+import githubsync.algebras.github._
 
 object ErrorHandler {
 

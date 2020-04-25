@@ -3,7 +3,7 @@ package githubsync.interpreters.upstream
 import cats.effect.Sync
 import cats.implicits._
 import fs2.{Pipe, Pure, RaiseThrowable, Stream, text}
-import githubsync.algebras.GitHubApi.JsonDecodingError
+import githubsync.algebras.github.JsonDecodingError
 import io.circe.fs2._
 import io.circe.{Decoder, Json}
 import org.http4s.client.Client

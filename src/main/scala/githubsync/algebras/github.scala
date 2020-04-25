@@ -5,7 +5,7 @@ import fs2.Stream
 import githubsync.domain.repository._
 import githubsync.domain.user._
 
-object GitHubApi {
+object github {
   trait GitHubApiAlgebra [F[_]]{
     def repositories(org: String): Stream[F, Repository]
     def stargazers(repo: Repository): Stream[F, User]

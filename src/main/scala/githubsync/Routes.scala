@@ -1,7 +1,7 @@
 package githubsync
 
 import githubsync.ErrorHandler.HttpErrorHandler
-import githubsync.algebras.GitHubApi.GitHubApiError
+import githubsync.algebras.github.GitHubApiError
 import githubsync.domain.user._
 import githubsync.domain.repository._
 import cats.Applicative

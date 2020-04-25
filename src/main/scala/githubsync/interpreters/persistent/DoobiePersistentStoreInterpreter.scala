@@ -4,7 +4,7 @@ import java.sql.SQLException
 
 import cats.effect.Sync
 import doobie.Transactor
-import githubsync.algebras.GitHubApi.{GitHubApiAlgebra, GitHubPersistentStoreAlgebra, InsertionError, SelectionError}
+import githubsync.algebras.github.{GitHubApiAlgebra, GitHubPersistentStoreAlgebra, InsertionError, SelectionError}
 import io.chrisdavenport.log4cats.Logger
 import githubsync.interpreters.upstream.GitHubApiInterpreter.GitHubApiConfig
 import org.http4s.client.Client

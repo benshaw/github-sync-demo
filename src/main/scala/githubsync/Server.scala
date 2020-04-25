@@ -14,7 +14,7 @@ import cats.implicits._
 import ciris._
 import ciris.refined._
 import eu.timepit.refined.auto._
-import githubsync.algebras.GitHubApi.{GitHubApiAlgebra, GitHubPersistentStoreAlgebra}
+import githubsync.algebras.github.{GitHubApiAlgebra, GitHubPersistentStoreAlgebra}
 import githubsync.interpreters.persistent.DoobiePersistentStoreInterpreter
 import githubsync.interpreters.service.RepositoryService
 import githubsync.interpreters.upstream.GitHubApiInterpreter
