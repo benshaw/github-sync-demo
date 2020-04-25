@@ -1,5 +1,12 @@
 package githubsync.interpreters.upstream.domain
 
+import cats.effect.Sync
+import io.circe.Decoder
+import io.circe.generic.semiauto.deriveDecoder
+import org.http4s.EntityDecoder
+import org.http4s.circe.jsonOf
+
+// generated from https://json2caseclass.cleverapps.io/
 case class GitHubStarGazer(login: String,
                             id: Double,
                             node_id: Option[String],
@@ -18,5 +25,11 @@ case class GitHubStarGazer(login: String,
                             received_events_url: Option[String],
                             `type`: Option[String],
                             site_admin: Option[Boolean])
+
+object GitHubStarGazer {
+
+  implicit val githubstargazerDecoder: Decoder[GitHubStarGazer] = deriveDecoder[GitHubStarGazer]
+  implicit def githubstargazerEntityDecoder[F[_] : Sync]: EntityDecoder[F, List[GitHubStarGazer]] = jsonOf
+}
 
 

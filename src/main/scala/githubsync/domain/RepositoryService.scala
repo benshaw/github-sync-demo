@@ -9,7 +9,7 @@ import fs2.{INothing, Stream}
 
 
 abstract class RepositoryService[F[_]](github: GitHubApiAlgebra[F]) {
-  //def stargazers(org:String): Stream[F, User]
+  def stargazers(org:String): Stream[F, Option[User]]
   //def addStar()
   //def addRepository()
 }
@@ -21,6 +21,11 @@ object RepositoryService {
   sealed trait Error extends Exception
 
   case class OrgNotAdded(org: String) extends Error
+  case class DbError1(err: Throwable) extends Error
+  case class DbError2(err: Throwable) extends Error
+  case class DbError3(err: Throwable) extends Error
+  case class DbError4(err: Throwable) extends Error
+  case class DbError5(err: Throwable) extends Error
 
   //case class DownStreamError(e: String) extends ContributorError
 
@@ -29,26 +34,40 @@ object RepositoryService {
   def create[F[_] : Concurrent](api: GitHubApiAlgebra[F], persistantStorage: GitHubPersistentStoreAlgebra[F])(implicit F: Monad[F], E: MonadError[F, Throwable]): RepositoryService[F] = new RepositoryService(api) {
 
     private def registered(org: String): Stream[F, Option[String]] =
-      Stream.eval(persistantStorage.registered(org).take(1).compile.toList.map(_.headOption))
+      Stream.eval(persistantStorage.registered(org).adaptError{
+        e => DbError1(e)
+      }.take(1).compile.toList.map(_.headOption))
 
+    //! \todo could this be optimized ?
+    //! \have to wait till webhook are combined to be sure
     def getFromDb(org: String): Stream[F, Option[User]] = for {
-      repos <-persistantStorage.repositories(org)
-      gazers <- persistantStorage.stargazers(repos)
+      repos <-persistantStorage.repositories(org).adaptError{
+        e => DbError2(e)
+      }
+      gazers <- persistantStorage.stargazers(repos).adaptError{
+        e => DbError3(e)
+      }
     } yield Some(gazers)
 
     def populateDb(org: String): Stream[F, Int] = {
       val repos = api.repositories(org)
       val gazers = repos.flatMap(r => api.stargazers(r))
 
-      val addGazers = gazers.chunkN(10).flatMap(o => Stream.eval(persistantStorage.addStarGazers(o)))
-      val addRepos = repos.chunkN(10).flatMap(o => Stream.eval(persistantStorage.addRepositories(o)))
+      val addGazers = gazers.chunkN(10).flatMap(o => Stream.eval(persistantStorage.addStarGazers(o).adaptError{
+        e => DbError4(e)
+      }))
+
+      val addRepos = repos.chunkN(10).flatMap(o => Stream.eval(persistantStorage.addRepositories(o).adaptError{
+        e => DbError5(e)
+      }))
 
       addGazers.concurrently(addRepos)
     }
 
-    def register(org: String): Stream[F, INothing] = {
+    def register(org: String): Stream[F, Option[User]] = {
 
-      Stream.empty.concurrently(populateDb(org))
+      populateDb(org).map(_ => None)
+      //Stream.empty.map(_ => None).concurrently(populateDb(org))
     //}
      // Async[F].async { cb =>
 

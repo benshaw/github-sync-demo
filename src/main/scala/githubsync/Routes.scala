@@ -19,9 +19,10 @@ object Routes {
     val dsl = new Http4sDsl[F] {}
     import dsl._
 
+    //! \todo cleanup
     val routes = HttpRoutes.of[F] {
       case GET -> Root / "org" / org / "starred" =>
-        Ok(starred.get(org).map(_.asJson))
+        Ok(starred.stargazers(org).map(_.asJson))
     }
 
     H.handle(routes)

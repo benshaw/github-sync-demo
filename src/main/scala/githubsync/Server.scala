@@ -16,7 +16,7 @@ import ciris._
 import ciris.refined._
 import eu.timepit.refined.auto._
 import githubsync.domain.GitHubApi.{GitHubApiAlgebra, GitHubPersistentStoreAlgebra}
-import githubsync.interpreters.persistent.GitHubPersistentStoreInterpreter
+import githubsync.interpreters.persistent.DoobiePersistentStoreInterpreter
 import githubsync.interpreters.upstream.GitHubApiInterpreter
 
 
@@ -43,7 +43,7 @@ object Server {
       client <- BlazeClientBuilder[F](global).stream
       loggedClient = if(conf.clientLogging){ org.http4s.client.middleware.Logger(true, true, _ => false)(client)} else client
       api: GitHubApiAlgebra[F] = GitHubApiInterpreter.create(loggedClient, conf.gitHubApiConfig)
-      db: GitHubPersistentStoreAlgebra[F] = GitHubPersistentStoreInterpreter.create(Database.xa)
+      db: GitHubPersistentStoreAlgebra[F] = DoobiePersistentStoreInterpreter.create(Database.xa)
       contributorsService = RepositoryService.create(api,db)
 
       httpApp = (

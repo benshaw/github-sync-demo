@@ -43,7 +43,7 @@ object GitHubApiInterpreter {
       def stargazers(repo: Repository): Stream[F, User] = for {
         uri <- s"${config.apiUrl}/repos/${repo.owner}/${repo.name}/stargazers".asUri()
         a <- client.getAllPages[GitHubStarGazer](Request[F](method = Method.GET, uri = uri, headers = authHeaders))
-        r = User(a.login)
+        r = User(a.login, repo.name)
       } yield r
 
 

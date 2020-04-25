@@ -6,6 +6,9 @@ Given an org find all users and then collect the repositories that they are inte
 
 The authenticated user can then star any of these themselves
 
+##
+ docker run --rm --name my_postgres -e POSTGRES_PASSWORD=password -v my_dbdata:/var/lib/postgresql/data -p 5432:5432 postgres:11 -c log_statement=all
+
 ## Running the app
 without env vars (default URL, no auth, disabled logging)
 
