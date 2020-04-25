@@ -5,7 +5,7 @@ import githubsync.domain.GitHubApi._
 import githubsync.interpreters.{GitHubLicense, GitHubOwner, GitHubPermissions, GitHubRepository}
 import cats.Applicative
 import cats.effect.{IO, Sync}
-import githubsync.interpreters.upstream.models.{GitHubContributor, GitHubLicense, GitHubOwner, GitHubPermissions, GitHubRepository}
+import githubsync.interpreters.upstream.domain.{GitHubContributor, GitHubLicense, GitHubOwner, GitHubPermissions, GitHubRepository}
 import githubsync.interpreters.upstream.{GitHubLicense, GitHubOwner, GitHubPermissions, GitHubRepository}
 import io.circe.{Decoder, Encoder}
 import org.http4s.{EntityDecoder, EntityEncoder}

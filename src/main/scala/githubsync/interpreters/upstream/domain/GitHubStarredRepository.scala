@@ -1,4 +1,4 @@
-package githubsync.interpreters.upstream.models
+package githubsync.interpreters.upstream.domain
 
 import cats.effect.Sync
 import io.circe.Decoder

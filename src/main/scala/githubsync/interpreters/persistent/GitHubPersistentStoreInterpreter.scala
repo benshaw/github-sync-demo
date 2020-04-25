@@ -29,6 +29,23 @@ object GitHubPersistentStoreInterpreter {
         update.transact(xa)
       }
 
+      //! registered name, initialized = false
+      def register(org: String): F[Int] = {
+        (sql"insert into registered (name) values ($org)")
+          .update
+          .run
+          .transact(xa)
+      }
+
+      def initialize(org)
+
+      def registered(org: String): Stream[F, String] = {
+        sql"select * from registered where org='$org'"
+          .query[String]    // Query0[String]
+          .stream           // Stream[ConnectionIO, String]
+          .transact(xa)
+      }
+
       def repositories(org: String): Stream[F, Repository] = {
         Stream.empty
         /*
