@@ -7,7 +7,8 @@ import githubsync.domain.repository._
 import cats.Applicative
 import cats.effect.Sync
 import cats.syntax.all._
-import githubsync.interpreters.service.RepositoryService
+import githubsync.algebras.service.RepositoryService
+import githubsync.interpreters.service.repositoryserviceinterpreter
 import io.circe.Encoder
 import io.circe.generic.semiauto.deriveEncoder
 import io.circe.syntax._
@@ -17,14 +18,14 @@ import org.http4s.{EntityEncoder, HttpRoutes}
 
 object Routes {
 
-  def contributorRoutes[F[_]](starred: RepositoryService[F])(implicit S:Sync[F], H: HttpErrorHandler[F, GitHubApiError]): HttpRoutes[F] = {
+  def contributorRoutes[F[_]](service: RepositoryService[F])(implicit S:Sync[F], H: HttpErrorHandler[F, GitHubApiError]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dsl._
 
     //! \todo cleanup
     val routes = HttpRoutes.of[F] {
       case GET -> Root / "org" / org / "starred" =>
-        Ok(starred.stargazers(org).map(_.asJson))
+        Ok(service.stargazers(org).map(_.asJson))
     }
 
     H.handle(routes)

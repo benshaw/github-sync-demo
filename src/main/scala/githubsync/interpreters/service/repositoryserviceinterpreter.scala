@@ -5,13 +5,14 @@ import cats.effect.implicits._
 import cats.implicits._
 import cats.{Monad, MonadError}
 import fs2.Stream
+import fs2._
 import githubsync.algebras.github.{GitHubApiAlgebra, GitHubPersistentStoreAlgebra}
 import githubsync.algebras.service.RepositoryService
 import githubsync.domain.user._
 import githubsync.domain.repository._
 
 
-object RepositoryService {
+object repositoryserviceinterpreter {
 
   //! \todo rename
   sealed trait Error extends Exception
@@ -21,45 +22,56 @@ object RepositoryService {
 
   //case class NotFound(e: String) extends ContributorError
 
-  def create[F[_] : Concurrent](api: GitHubApiAlgebra[F], persistantStorage: GitHubPersistentStoreAlgebra[F])(implicit F: Monad[F], D: MonadError[F, Throwable]): RepositoryService[F] =
+  def RepositoryServiceInterpreter[F[_] : Concurrent](api: GitHubApiAlgebra[F], persistentStorage: GitHubPersistentStoreAlgebra[F])(implicit F: Monad[F], D: MonadError[F, Throwable]): RepositoryService[F] =
 
     new RepositoryService[F] {
 
-
-      def addStar()
-
-      def addRepository()
-
-      def stargazers(org: String): Stream[F, Option[User]] = {
-
+      def stargazers(org: String): Stream[F, Option[User]] =
         isInitialized(org).flatMap {
           case Some(_) => getFromDb(org)
-          case None => Stream.eval(initialize(org).start.void.map(_ => None))
+          case None => InitializeAsync(org)
         }
 
-      }
+      private def InitializeAsync(org: String): Stream[F, Option[User]] =
+        Stream.eval(initialize(org).compile.toList.start.void).map(_ => None)
 
       //! \todo cleanup
       private def isInitialized(org: String): Stream[F, Option[String]] =
-        Stream.eval(persistantStorage.registered(org).head.compile.toList.map(_.headOption))
+        Stream.eval(persistentStorage.registered(org).head.compile.toList.map(_.headOption))
 
-      //! \todo error reporting
-      //! \todo could this be optimized ?
-      //! \have to wait till webhook are combined to be sure
       private def getFromDb(org: String): Stream[F, Option[User]] = for {
-        repos <- persistantStorage.repositories(org)
-        gazers <- persistantStorage.stargazers(repos)
+        repos <- persistentStorage.repositories(org)
+        gazers <- persistentStorage.stargazers(repos)
       } yield Some(gazers)
 
-      private def initialize(org: String): F[List[Int]] = {
-        val repos = api.repositories(org)
-        val gazers = repos.flatMap(r => api.stargazers(r))
+      private def initialize(org: String): Stream[F, Option[User]] = for {
+        _ <- syncDbAndRegisterHooks(org)
+        _ <- Stream.eval(persistentStorage.register(org))
+      } yield None
 
-        val addGazers = gazers.chunkN(10).flatMap(o => Stream.eval(persistantStorage.addStarGazers(o)))
+      private def syncDbAndRegisterHooks(org: String): Stream[F, Int] ={
+        val repos: Stream[F, Repository] =
+          api.repositories(org)
 
-        val addRepos = repos.chunkN(10).flatMap(o => Stream.eval(persistantStorage.addRepositories(o)))
+        val gazers: Stream[F, User] =
+          repos.flatMap(r => api.stargazers(r))
 
-        addGazers.concurrently(addRepos).concurrently(Stream.eval(persistantStorage.register(org))).compile.toList
+        val addGazers: Stream[F, Int] =
+          gazers.chunkN(10).flatMap(o => Stream.eval(persistentStorage.addStarGazers(o)))
+
+        val addRepos: Stream[F, Int] =
+          repos.chunkN(10).flatMap(o => Stream.eval(persistentStorage.addRepositories(o)))
+
+        val syncData: Stream[F, Int] =
+          addGazers.concurrently(addRepos)
+
+        val registerWebHooks: Stream[F, Unit] = for {
+          _ <- repos.map(api.registerForRepoEvents)
+          _ <- repos.map(api.registerForStarEvents)
+        } yield ()
+
+        syncData.concurrently(registerWebHooks)
+
       }
 
       /*

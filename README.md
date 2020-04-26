@@ -1,10 +1,11 @@
 
 # Github sync
 
-What repositories are contributors interested in ?
-Given an org find all users and then collect the repositories that they are interested in (starred)
+Monitor stargazers of an org
 
-The authenticated user can then star any of these themselves
+* syncs all repos and stargazers locally if not already
+* uses notificiations (via webhooks)
+* utilize streams where possible
 
 ##
  docker run --rm --name my_postgres -e POSTGRES_PASSWORD=password -v my_dbdata:/var/lib/postgresql/data -p 5432:5432 postgres:11 -c log_statement=all

@@ -10,7 +10,7 @@ import org.http4s.dsl.io._
 import io.circe.syntax._
 import org.http4s.circe._
 import eu.timepit.refined.auto._
-import githubsync.interpreters.upstream.GitHubApiInterpreter
+import githubsync.interpreters.upstream.githubapiinterpreter
 
 //! \todo get case class matching working
 //import scala.language.experimental.macros
@@ -19,7 +19,7 @@ import githubsync.interpreters.upstream.GitHubApiInterpreter
 class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org.specs2.matcher.MatcherMacros {
 
   import TestData._
-  import githubsync.interpreters.upstream.GitHubApiInterpreter._
+  import githubsync.interpreters.upstream.githubapiinterpreter._
 
   "GitHubApiInterpreter" >> {
 
@@ -31,7 +31,7 @@ class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org
           .liftF(resp)
         })
 
-      val g = GitHubApiInterpreter.create[IO](client, config)
+      val g = githubapiinterpreter.create[IO](client, config)
       //! \todo match left case class
       //g.repositories("x").attempt.unsafeRunSync() must beLeft((i:GitHubError) => i must matchA[ResourceNotFound])
       g.repositories("x").attempt.unsafeRunSync() must beLeft
@@ -45,7 +45,7 @@ class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org
           .liftF(resp)
         })
 
-      val g = GitHubApiInterpreter.create[IO](client, config)
+      val g = githubapiinterpreter.create[IO](client, config)
       //! \todo match case class (parse error)
       g.repositories("x").attempt.unsafeRunSync() must beLeft
     }
@@ -57,7 +57,7 @@ class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org
           .liftF(resp)
         })
 
-      val g = GitHubApiInterpreter.create[IO](client, config)
+      val g = githubapiinterpreter.create[IO](client, config)
 
       g.contributors(repos.head).unsafeRunSync() must containTheSameElementsAs(cont)
     }
@@ -69,7 +69,7 @@ class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org
           .liftF(resp)
         })
 
-      val g = GitHubApiInterpreter.create[IO](client, config)
+      val g = githubapiinterpreter.create[IO](client, config)
 
       g.repositories("x").unsafeRunSync() must containTheSameElementsAs(repos)
     }
@@ -85,7 +85,7 @@ class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org
           .liftF(resp)
         })
 
-      val g = GitHubApiInterpreter.create[IO](client, config)
+      val g = githubapiinterpreter.create[IO](client, config)
 
       g.repositories("x").unsafeRunSync().map(_.name) must containTheSameElementsAs((repos ::: repos ::: repos ::: repos).map(_.name))
     }

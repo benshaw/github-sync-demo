@@ -1,6 +1,6 @@
 package githubsync
 
-import githubsync.interpreters.upstream.GitHubApiInterpreter.{GitHubApiConfig, GitHubToken, GitHubUri}
+import githubsync.interpreters.upstream.githubapiinterpreter.{CallbackUrl, GitHubApiConfig, GitHubToken, GitHubUri}
 import cats.effect.{ConcurrentEffect, ContextShift, IO, Timer}
 import fs2.Stream
 import org.http4s.client.blaze.BlazeClientBuilder
@@ -15,9 +15,9 @@ import ciris._
 import ciris.refined._
 import eu.timepit.refined.auto._
 import githubsync.algebras.github.{GitHubApiAlgebra, GitHubPersistentStoreAlgebra}
-import githubsync.interpreters.persistent.DoobiePersistentStoreInterpreter
-import githubsync.interpreters.service.RepositoryService
-import githubsync.interpreters.upstream.GitHubApiInterpreter
+import githubsync.interpreters.persistent.doobiepersisteninterpreter
+import githubsync.interpreters.service.repositoryserviceinterpreter
+import githubsync.interpreters.upstream.githubapiinterpreter
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 
@@ -29,15 +29,14 @@ object Server {
   val config:ConfigValue[ServerConfig] =
     (env("GH_URL").as[GitHubUri].default("https://api.github.com"),
       env("GH_TOKEN").as[GitHubToken].option,
+      env("HOST").as[CallbackUrl].default("http://0.0.0.0"),
       env("LOG_APP").as[Boolean].default(false),
-      env("LOG_CLI").as[Boolean].default(false)).parMapN{(uri,token, app, cli) =>
+      env("LOG_CLI").as[Boolean].default(false)).parMapN{(ghuri, token, url, app, cli) =>
       ServerConfig(
         app,
         cli,
-        GitHubApiConfig(uri, token))
+        GitHubApiConfig(ghuri, token, url))
     }
-
-
 
   def stream[F[_]: ConcurrentEffect : Logger](conf: ServerConfig)(implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
 
@@ -45,12 +44,12 @@ object Server {
     for {
       client <- BlazeClientBuilder[F](global).stream
       loggedClient = if(conf.clientLogging){ org.http4s.client.middleware.Logger(true, true, _ => false)(client)} else client
-      api: GitHubApiAlgebra[F] = GitHubApiInterpreter.create(loggedClient, conf.gitHubApiConfig)
-      db: GitHubPersistentStoreAlgebra[F] = DoobiePersistentStoreInterpreter.create(Database.xa)
-      contributorsService = RepositoryService.create(api,db)
+      api: GitHubApiAlgebra[F] = githubapiinterpreter.create(loggedClient, conf.gitHubApiConfig)
+      db: GitHubPersistentStoreAlgebra[F] = doobiepersisteninterpreter.DoobiePersistentStore(Database.xa)
+      service = repositoryserviceinterpreter.RepositoryServiceInterpreter(api,db)
 
       httpApp = (
-        Routes.contributorRoutes[F](contributorsService)
+        Routes.contributorRoutes[F](service)
       ).orNotFound
 
       loggedHttpApp = if(conf.appLogging){middleware.Logger.httpApp(true, true)(httpApp)} else httpApp

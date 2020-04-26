@@ -12,7 +12,7 @@ import org.http4s.{EntityBody, EntityDecoder, Headers, Request}
 import io.circe.Json
 import jawnfs2._
 
-object PaginatedClientWithGithubErrors {
+object paginatedclient {
 
   def jsonDecoder[F[_]: RaiseThrowable, A](implicit decode: Decoder[A]): Pipe[F, Json, A] =
     _.flatMap { json =>
