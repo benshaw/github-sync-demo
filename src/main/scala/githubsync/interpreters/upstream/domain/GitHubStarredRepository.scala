@@ -126,6 +126,6 @@ object GitHubStarredRepository {
   implicit val starredOwnerDecoder = deriveDecoder[GitHubStarredRepositoryOwner]
   implicit val starredPermissionsDecoder = deriveDecoder[GitHubStarredRepositoryPermissions]
   implicit val starredRepoListDecoder = deriveDecoder[GitHubStarredRepository]
-  implicit def starredRepoEntityDecoder[F[_] : Sync]: EntityDecoder[F, List[GitHubStarredRepository]] = jsonOf
+  implicit def starredRepoEntityDecoder[F[_] : Sync]: EntityDecoder[F,GitHubStarredRepository] = jsonOf
 }
 

@@ -10,7 +10,11 @@ import org.http4s.dsl.io._
 import io.circe.syntax._
 import org.http4s.circe._
 import eu.timepit.refined.auto._
+import fs2.Pure
 import githubsync.interpreters.upstream.githubapiinterpreter
+import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
+import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import io.circe.generic.auto._
 
 //! \todo get case class matching working
 //import scala.language.experimental.macros
@@ -20,6 +24,10 @@ class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org
 
   import TestData._
   import githubsync.interpreters.upstream.githubapiinterpreter._
+
+  private[this] val config = GitHubApiConfig("https://www.test.com", None, "https://www.test.com")
+
+  implicit val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
   "GitHubApiInterpreter" >> {
 
@@ -34,7 +42,7 @@ class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org
       val g = githubapiinterpreter.GitHubApiInterpreter[IO](client, config)
       //! \todo match left case class
       //g.repositories("x").attempt.unsafeRunSync() must beLeft((i:GitHubError) => i must matchA[ResourceNotFound])
-      g.repositories("x").attempt.unsafeRunSync() must beLeft
+      g.repositories("x").compile.toList.attempt.unsafeRunSync() must beLeft
     }
 
     "Handle Invalid Json Errors" >> {
@@ -47,35 +55,23 @@ class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org
 
       val g = githubapiinterpreter.GitHubApiInterpreter[IO](client, config)
       //! \todo match case class (parse error)
-      g.repositories("x").attempt.unsafeRunSync() must beLeft
-    }
-
-    "GetContributors" >> {
-      val resp: IO[Response[IO]] = Ok(IO.pure(gitHubCont.asJson))
-      val client: Client[IO] =
-        Client[IO]({ req => Resource
-          .liftF(resp)
-        })
-
-      val g = githubapiinterpreter.GitHubApiInterpreter[IO](client, config)
-
-      g.contributors(repos.head).unsafeRunSync() must containTheSameElementsAs(cont)
+      g.repositories("x").compile.toList.attempt.unsafeRunSync() must beLeft
     }
 
     "GetRepositories" >> {
-      val resp: IO[Response[IO]] = Ok(IO.pure(gitHubRepo.asJson))
+      val resp: fs2.Stream[IO, Json] = gitHubRepo.map(_.asJson)
       val client: Client[IO] =
         Client[IO]({ req => Resource
-          .liftF(resp)
+          .liftF(Ok(resp))
         })
 
       val g = githubapiinterpreter.GitHubApiInterpreter[IO](client, config)
 
-      g.repositories("x").unsafeRunSync() must containTheSameElementsAs(repos)
+      g.repositories(owner).compile.toList.unsafeRunSync() must containTheSameElementsAs(repos.compile.toList)
     }
 
     "Pagination two page" >>{
-      val d: Json = gitHubRepo.asJson
+      val d: fs2.Stream[IO, Json] = gitHubRepo.map(_.asJson)
       val resp: IO[Response[IO]] =
         Ok(d,
           Header("Link", "<https://api.github.com/search/code?q=addClass+user%3Amozilla&page=2>; rel=\"next\""),
@@ -87,9 +83,8 @@ class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org
 
       val g = githubapiinterpreter.GitHubApiInterpreter[IO](client, config)
 
-      g.repositories("x").unsafeRunSync().map(_.name) must containTheSameElementsAs((repos ::: repos ::: repos ::: repos).map(_.name))
+      g.repositories("x").compile.toList.unsafeRunSync().map(_.name) must containTheSameElementsAs((repos.compile.toList ::: repos.compile.toList ::: repos.compile.toList ::: repos.compile.toList).map(_.name))
     }
   }
 
-  private[this] val config = GitHubApiConfig("https://www.test.com", None)
 }

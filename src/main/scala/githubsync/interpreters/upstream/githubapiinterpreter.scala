@@ -4,17 +4,15 @@ import cats.effect.Sync
 import cats.implicits._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.collection.MinSize
+import fs2.{Pipe, Stream}
 import githubsync.algebras.github.GitHubApiAlgebra
 import githubsync.domain.repository._
 import githubsync.domain.user._
-import githubsync.interpreters.upstream.domain.{GitHubContributor, GitHubLicense, GitHubOwner, GitHubPermissions, GitHubRepository, GitHubStarGazer, GitHubStarredRepository, GitHubWebHookRegistration, GitHubWebHookRegistrationConfig, GitHubWebHookResponse, GitHubWebHookResponseConfig}
-import io.circe.{Decoder, Json}
-import io.circe.generic.semiauto._
-import org.http4s.circe._
-import org.http4s.client.Client
-import org.http4s._
-import fs2.{Pipe, Pure, RaiseThrowable, Stream, text}
+import githubsync.interpreters.upstream.domain._
 import io.chrisdavenport.log4cats.Logger
+import io.circe.Json
+import org.http4s._
+import org.http4s.client.Client
 
 object githubapiinterpreter {
 
@@ -76,7 +74,6 @@ object githubapiinterpreter {
 
       implicit val ghsrd: Pipe[F, Json, GitHubStarredRepository] = jsonDecoder[F, GitHubStarredRepository]
       implicit val ghrd: Pipe[F, Json, GitHubRepository] = jsonDecoder[F, GitHubRepository]
-      implicit val ghcrd: Pipe[F, Json, GitHubContributor] = jsonDecoder[F, GitHubContributor]
       implicit val ghsg: Pipe[F, Json, GitHubStarGazer] = jsonDecoder[F, GitHubStarGazer]
     }
 

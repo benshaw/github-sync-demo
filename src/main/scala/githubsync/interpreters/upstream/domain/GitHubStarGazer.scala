@@ -29,7 +29,7 @@ case class GitHubStarGazer(login: String,
 object GitHubStarGazer {
 
   implicit val githubstargazerDecoder: Decoder[GitHubStarGazer] = deriveDecoder[GitHubStarGazer]
-  implicit def githubstargazerEntityDecoder[F[_] : Sync]: EntityDecoder[F, List[GitHubStarGazer]] = jsonOf
+  implicit def githubstargazerEntityDecoder[F[_] : Sync]: EntityDecoder[F, GitHubStarGazer] = jsonOf
 }
 
 

@@ -120,6 +120,6 @@ object GitHubRepository {
   implicit val licenseDecoder = deriveDecoder[GitHubLicense]
   implicit val permissionsDecoder = deriveDecoder[GitHubPermissions]
   implicit val repoListDecoder: Decoder[GitHubRepository] = deriveDecoder[GitHubRepository]
-  implicit def repoEntityDecoder[F[_] : Sync]: EntityDecoder[F, List[GitHubRepository]] = jsonOf
+  implicit def repoEntityDecoder[F[_] : Sync]: EntityDecoder[F,GitHubRepository] = jsonOf
 }
 

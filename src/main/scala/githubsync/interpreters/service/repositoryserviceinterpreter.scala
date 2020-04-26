@@ -16,7 +16,7 @@ object repositoryserviceinterpreter {
   def RepositoryServiceInterpreter[F[_] : Concurrent : Logger: Sync](api: GitHubApiAlgebra[F], persistentStorage: GitHubPersistentStoreAlgebra[F])(implicit F: Monad[F]): RepositoryService[F] =
     new RepositoryService[F] {
 
-      implicit private final class RepositoryServiceErrorOps[A](private val fa: Stream[F, A] /*F[A]*/) {
+      implicit private final class RepositoryServiceErrorOps[A](private val fa: Stream[F, A]) {
         def downStreamError(): Stream[F, A] =
           fa.adaptErr {
             case UriParseError(e) => DownStreamBadRequest(e, "Error Parsing request URL")

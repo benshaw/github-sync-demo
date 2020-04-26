@@ -6,6 +6,7 @@ class UserServiceTest extends org.specs2.mutable.Specification{
 
   import githubsync.TestData._
 
+  /*
   val cont = RepositoryService.create[IO](testApi)
   "Contributors" >> {
     "Are calculated correctly" >> {
@@ -14,6 +15,6 @@ class UserServiceTest extends org.specs2.mutable.Specification{
         .run(owner)
         .unsafeRunSync() must containTheSameElementsAs(desiredResult)
     }
-  }
+  }*/
 }
 
