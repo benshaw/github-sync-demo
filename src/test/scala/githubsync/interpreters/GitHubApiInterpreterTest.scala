@@ -58,7 +58,7 @@ class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org
       g.repositories("x").compile.toList.attempt.unsafeRunSync() must beLeft
     }
 
-    "GetRepositories" >> {
+    "Repositories" >> {
       val resp: fs2.Stream[IO, Json] = gitHubRepo.map(_.asJson)
       val client: Client[IO] =
         Client[IO]({ req => Resource
@@ -68,6 +68,18 @@ class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org
       val g = githubapiinterpreter.GitHubApiInterpreter[IO](client, config)
 
       g.repositories(owner).compile.toList.unsafeRunSync() must containTheSameElementsAs(repos.compile.toList)
+    }
+
+    "Stars" >> {
+      val resp: fs2.Stream[IO, Json] = gitHubStars.map(_.asJson)
+      val client: Client[IO] =
+        Client[IO]({ req => Resource
+          .liftF(Ok(resp))
+        })
+
+      val g = githubapiinterpreter.GitHubApiInterpreter[IO](client, config)
+
+       g.stargazers(repo1).compile.toList.unsafeRunSync() must containTheSameElementsAs(starGazersR1.compile.toList)
     }
 
     "Pagination two page" >>{

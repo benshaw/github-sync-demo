@@ -9,22 +9,22 @@ import org.http4s.circe.jsonOf
 // generated from https://json2caseclass.cleverapps.io/
 case class GitHubStarGazer(login: String,
                             id: Double,
-                            node_id: Option[String],
-                            avatar_url: Option[String],
-                            gravatar_id: Option[String],
-                            url: Option[String],
-                            html_url: Option[String],
-                            followers_url: Option[String],
-                            following_url: Option[String],
-                            gists_url: Option[String],
-                            starred_url: Option[String],
-                            subscriptions_url: Option[String],
-                            organizations_url: Option[String],
-                            repos_url: Option[String],
-                            events_url: Option[String],
-                            received_events_url: Option[String],
-                            `type`: Option[String],
-                            site_admin: Option[Boolean])
+                            node_id: Option[String] = None,
+                            avatar_url: Option[String] = None,
+                            gravatar_id: Option[String] = None,
+                            url: Option[String] = None,
+                            html_url: Option[String] = None,
+                            followers_url: Option[String] = None,
+                            following_url: Option[String] = None,
+                            gists_url: Option[String] = None,
+                            starred_url: Option[String] = None,
+                            subscriptions_url: Option[String] = None,
+                            organizations_url: Option[String] = None,
+                            repos_url: Option[String] = None,
+                            events_url: Option[String] = None,
+                            received_events_url: Option[String] = None,
+                            `type`: Option[String] = None,
+                            site_admin: Option[Boolean] = None)
 
 object GitHubStarGazer {
 

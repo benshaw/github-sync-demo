@@ -5,7 +5,7 @@ import fs2.{Pure, Stream}
 import githubsync.algebras.github._
 import githubsync.domain.repository._
 import githubsync.domain.user.User
-import githubsync.interpreters.upstream.domain.{GitHubOwner, GitHubRepository}
+import githubsync.interpreters.upstream.domain.{GitHubOwner, GitHubRepository, GitHubStarGazer, GitHubStarredRepository, GitHubStarredRepositoryOwner}
 
 import scala.util.Random
 
@@ -86,6 +86,12 @@ object TestData {
 
   val gitHubRepo: Stream[Pure, GitHubRepository] =
     Stream(generateRepo(r1, owner),generateRepo(r2, owner),generateRepo(r3, owner))
+
+  val gitHubStars: Stream[Pure, GitHubStarGazer] =
+    Stream(genStar(s1),genStar(s2),genStar(s3))
+
+    def genStar(name: String) =
+      GitHubStarGazer(name, Random.nextDouble())
 
   def generateRepo(name: String, owner: String): GitHubRepository =
     GitHubRepository(id = Random.nextDouble(), node_id = Random.nextString(5), name = name, full_name = name,
