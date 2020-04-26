@@ -1,5 +1,12 @@
 package githubsync.domain
 
+import cats.Applicative
+import cats.effect.Sync
+import io.circe.{Decoder, Encoder}
+import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import org.http4s.circe.{jsonOf, _}
+import org.http4s.{EntityDecoder, EntityEncoder}
+
 // generated from https://json2caseclass.cleverapps.io/
 
 object starevent {
@@ -107,6 +114,14 @@ object starevent {
                         repository: StarEventRepository,
                         sender: StarEventOwner
                       )
+  implicit val starEventRepoEncoder: Encoder[StarEventRepository] = deriveEncoder[StarEventRepository]
+  implicit val starEventOwnerEncoder: Encoder[StarEventOwner] = deriveEncoder[StarEventOwner]
+  implicit private val starEventEncoder: Encoder[StarEvent] = deriveEncoder[StarEvent]
+  implicit private def starEventEntityEncoder[F[_] : Applicative]: EntityEncoder[F, StarEvent] = jsonEncoderOf
 
+  implicit val starEventRepoDecoder: Decoder[StarEventRepository] = deriveDecoder[StarEventRepository]
+  implicit val starEventOwnerDecoder: Decoder[StarEventOwner] = deriveDecoder[StarEventOwner]
+  implicit val starEventDecoder: Decoder[StarEvent] = deriveDecoder[StarEvent]
+  implicit def starEventEntityDecoder[F[_] : Sync]: EntityDecoder[F, StarEvent] = jsonOf
 
 }

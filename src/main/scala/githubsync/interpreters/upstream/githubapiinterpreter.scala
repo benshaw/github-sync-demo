@@ -26,7 +26,7 @@ object githubapiinterpreter {
   type GitHubToken = String Refined MinSize[5] // \todo refine the token better find out the exact format ? is it a jwt
   case class GitHubApiConfig(apiUrl: GitHubUri, token: Option[GitHubToken], callBackUrl: CallbackUrl)
 
-  def create[F[_] : Sync : Logger](client: Client[F], config: GitHubApiConfig): GitHubApiAlgebra[F] =
+  def GitHubApiInterpreter[F[_] : Sync : Logger](client: Client[F], config: GitHubApiConfig): GitHubApiAlgebra[F] =
     new GitHubApiAlgebra[F] {
 
       private val authHeaders: Headers = config.token.map(t => Headers.of(Header("Authorization", s"token ${t}"))).getOrElse(Headers.empty)
@@ -34,7 +34,7 @@ object githubapiinterpreter {
       def repositories(org: String): Stream[F, Repository] = for {
         uri <- s"${config.apiUrl}/orgs/$org/repos".asUriStream()
         a <- client.getAllPages[GitHubRepository](Request[F](method = Method.GET, uri = uri, headers = authHeaders))
-        r = Repository(a.name, a.owner.login)
+        r = Repository(a.name, org)
       } yield r
 
       def stargazers(repo: Repository): Stream[F, User] = for {
@@ -57,7 +57,7 @@ object githubapiinterpreter {
       }
 
       def registerForRepoEvents(repo: Repository): F[Repository] = {
-        val c = GitHubWebHookRegistrationConfig(url = s"${config.callBackUrl}/star/event",
+        val c = GitHubWebHookRegistrationConfig(url = s"${config.callBackUrl}/repo/event",
           content_type = "json",
           insecure_ssl = "1") //! set this to 0 if SSL is configured
 

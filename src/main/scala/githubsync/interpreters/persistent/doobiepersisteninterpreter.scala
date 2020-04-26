@@ -1,22 +1,15 @@
 package githubsync.interpreters.persistent
 
-import java.sql.SQLException
-
-import cats.effect.Sync
-import doobie.Transactor
-import githubsync.algebras.github.{GitHubApiAlgebra, GitHubPersistentStoreAlgebra, InsertionError, SelectionError}
-import io.chrisdavenport.log4cats.Logger
-import githubsync.interpreters.upstream.githubapiinterpreter.GitHubApiConfig
-import org.http4s.client.Client
-import fs2.Stream
-import doobie._
-import doobie.implicits._
 import cats._
-import cats.data._
-import cats.effect._
+import cats.effect.Sync
 import cats.implicits._
+import doobie.{Transactor, _}
+import doobie.implicits._
+import fs2.Stream
+import githubsync.algebras.github.{GitHubPersistentStoreAlgebra, InsertionError, SelectionError}
 import githubsync.domain.repository._
 import githubsync.domain.user._
+import io.chrisdavenport.log4cats.Logger
 
 object doobiepersisteninterpreter {
 

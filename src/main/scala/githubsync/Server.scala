@@ -17,6 +17,8 @@ import eu.timepit.refined.auto._
 import githubsync.algebras.github.{GitHubApiAlgebra, GitHubPersistentStoreAlgebra}
 import githubsync.interpreters.persistent.doobiepersisteninterpreter
 import githubsync.interpreters.service.repositoryserviceinterpreter
+import githubsync.interpreters.service.eventserviceinterpreter
+import githubsync.Routes._
 import githubsync.interpreters.upstream.githubapiinterpreter
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
@@ -44,12 +46,14 @@ object Server {
     for {
       client <- BlazeClientBuilder[F](global).stream
       loggedClient = if(conf.clientLogging){ org.http4s.client.middleware.Logger(true, true, _ => false)(client)} else client
-      api: GitHubApiAlgebra[F] = githubapiinterpreter.create(loggedClient, conf.gitHubApiConfig)
+      api: GitHubApiAlgebra[F] = githubapiinterpreter.GitHubApiInterpreter(loggedClient, conf.gitHubApiConfig)
       db: GitHubPersistentStoreAlgebra[F] = doobiepersisteninterpreter.DoobiePersistentStore(Database.xa)
-      service = repositoryserviceinterpreter.RepositoryServiceInterpreter(api,db)
+      repositoryService = repositoryserviceinterpreter.RepositoryServiceInterpreter(api,db)
+      eventService = eventserviceinterpreter.EventServiceInterpreter(api, db)//.RepositoryServiceInterpreter(api,db)
 
       httpApp = (
-        Routes.contributorRoutes[F](service)
+        repositoryRoutes[F](repositoryService) <+>
+        eventRoutes[F](eventService)
       ).orNotFound
 
       loggedHttpApp = if(conf.appLogging){middleware.Logger.httpApp(true, true)(httpApp)} else httpApp

@@ -16,7 +16,12 @@ object service {
     def repoEvent(e: RepositoryEvent): F[Int]
   }
 
-  trait ServiceError extends Throwable
-  case class UnknownAction(a: String) extends ServiceError
+  trait RepositoryError extends Exception
+  case class RepositoryDownStreamError(e : Throwable) extends RepositoryError
+  case class DownStreamBadRequest(e: String, msg: String) extends RepositoryError
+
+  trait EventError extends Throwable
+  case class EventDownStreamError(e : Throwable) extends EventError
+  case class UnknownAction(a: String) extends EventError
 }
 

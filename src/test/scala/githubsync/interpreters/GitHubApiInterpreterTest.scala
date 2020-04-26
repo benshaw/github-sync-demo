@@ -31,7 +31,7 @@ class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org
           .liftF(resp)
         })
 
-      val g = githubapiinterpreter.create[IO](client, config)
+      val g = githubapiinterpreter.GitHubApiInterpreter[IO](client, config)
       //! \todo match left case class
       //g.repositories("x").attempt.unsafeRunSync() must beLeft((i:GitHubError) => i must matchA[ResourceNotFound])
       g.repositories("x").attempt.unsafeRunSync() must beLeft
@@ -45,7 +45,7 @@ class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org
           .liftF(resp)
         })
 
-      val g = githubapiinterpreter.create[IO](client, config)
+      val g = githubapiinterpreter.GitHubApiInterpreter[IO](client, config)
       //! \todo match case class (parse error)
       g.repositories("x").attempt.unsafeRunSync() must beLeft
     }
@@ -57,7 +57,7 @@ class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org
           .liftF(resp)
         })
 
-      val g = githubapiinterpreter.create[IO](client, config)
+      val g = githubapiinterpreter.GitHubApiInterpreter[IO](client, config)
 
       g.contributors(repos.head).unsafeRunSync() must containTheSameElementsAs(cont)
     }
@@ -69,7 +69,7 @@ class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org
           .liftF(resp)
         })
 
-      val g = githubapiinterpreter.create[IO](client, config)
+      val g = githubapiinterpreter.GitHubApiInterpreter[IO](client, config)
 
       g.repositories("x").unsafeRunSync() must containTheSameElementsAs(repos)
     }
@@ -85,7 +85,7 @@ class GitHubApiInterpreterTest extends org.specs2.mutable.Specification with org
           .liftF(resp)
         })
 
-      val g = githubapiinterpreter.create[IO](client, config)
+      val g = githubapiinterpreter.GitHubApiInterpreter[IO](client, config)
 
       g.repositories("x").unsafeRunSync().map(_.name) must containTheSameElementsAs((repos ::: repos ::: repos ::: repos).map(_.name))
     }

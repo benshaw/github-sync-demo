@@ -1,45 +1,49 @@
 package githubsync.interpreters.service
 
-import cats.effect.Concurrent
-import cats.effect.implicits._
-import cats.implicits._
+import cats.effect.{Concurrent, Sync}
 import cats.{Monad, MonadError}
 import fs2.Stream
-import fs2._
-import githubsync.algebras.github.{GitHubApiAlgebra, GitHubPersistentStoreAlgebra}
-import githubsync.algebras.service.RepositoryService
+import io.chrisdavenport.log4cats.Logger
+import githubsync.algebras.github._
+import githubsync.algebras.service._
+import cats.effect.implicits._
+import cats.implicits._
 import githubsync.domain.user._
 import githubsync.domain.repository._
 
-
 object repositoryserviceinterpreter {
 
-  //! \todo rename
-  sealed trait Error extends Exception
-
-
-  //case class DownStreamError(e: String) extends ContributorError
-
-  //case class NotFound(e: String) extends ContributorError
-
-  def RepositoryServiceInterpreter[F[_] : Concurrent](api: GitHubApiAlgebra[F], persistentStorage: GitHubPersistentStoreAlgebra[F])(implicit F: Monad[F], D: MonadError[F, Throwable]): RepositoryService[F] =
-
+  def RepositoryServiceInterpreter[F[_] : Concurrent : Logger: Sync](api: GitHubApiAlgebra[F], persistentStorage: GitHubPersistentStoreAlgebra[F])(implicit F: Monad[F]): RepositoryService[F] =
     new RepositoryService[F] {
+
+      implicit private final class RepositoryServiceErrorOps[A](private val fa: Stream[F, A] /*F[A]*/) {
+        def downStreamError(): Stream[F, A] =
+          fa.adaptErr {
+            case UriParseError(e) => DownStreamBadRequest(e, "Error Parsing request URL")
+            case ResourceNotFound(e) => DownStreamBadRequest(e, "Unable to find the resource on the downstream API")
+            case e => RepositoryDownStreamError(e)
+          }
+      }
 
       def stargazers(org: String): Stream[F, Option[User]] =
         isInitialized(org).flatMap {
           case Some(_) => getFromDb(org)
           case None => InitializeAsync(org)
-        }
+        }.downStreamError()
 
       private def InitializeAsync(org: String): Stream[F, Option[User]] =
-        Stream.eval(initialize(org).compile.toList.start.void).map(_ => None)
+        Stream.eval(
+          for {
+            _ <- Logger[F].info(s"Initializing Data for $org Asynchronously")
+            r <- initialize(org).compile.toList.start.void
+          } yield r
+        ).map(_ => None)
 
-      //! \todo cleanup
       private def isInitialized(org: String): Stream[F, Option[String]] =
         Stream.eval(persistentStorage.registered(org).head.compile.toList.map(_.headOption))
 
       private def getFromDb(org: String): Stream[F, Option[User]] = for {
+        _ <- Stream.eval(Logger[F].info(s"Retrieving data from persistent storage for $org"))
         repos <- persistentStorage.repositories(org)
         gazers <- persistentStorage.stargazers(repos)
       } yield Some(gazers)
@@ -49,7 +53,7 @@ object repositoryserviceinterpreter {
         _ <- Stream.eval(persistentStorage.register(org))
       } yield None
 
-      private def syncDbAndRegisterHooks(org: String): Stream[F, Int] ={
+      private def syncDbAndRegisterHooks(org: String): Stream[F, Int] = {
         val repos: Stream[F, Repository] =
           api.repositories(org)
 
@@ -73,60 +77,5 @@ object repositoryserviceinterpreter {
         syncData.concurrently(registerWebHooks)
 
       }
-
-      /*
-      private val getRepositories = Kleisli((orgName: String) =>
-        api
-          .repositories(orgName)
-          /*.adaptError {
-          //! \todo LOG
-            case e => DownStreamError(e.toString)
-          }*/
-      )
-
-      private val getContributors = (r: Repository) =>
-        api.contributors(r)
-          .recover {
-            case ResourceNotFound(_) => List.empty
-          }
-          /*
-          .adaptError {
-            case e => DownStreamError(e.toString)
-          }*/
-
-      private val getStarred = (r: User) =>
-        api.starred(r)
-          /*.recover {
-            case ResourceNotFound(_) => List.empty
-          }
-          .adaptError {
-            case e => DownStreamError(e.toString)
-          }*/
-
-      private val getRepositoryContributors: Kleisli[F, List[Repository], List[User]] = Kleisli((repo: List[Repository]) =>
-        repo
-          .flatTraverse(getContributors)
-          .map(sortContributorList)
-      )
-
-      private val getUsersStarredRepositories: Kleisli[Nothing, Any, Nothing] = Kleisli((users: Stream[User]) =>
-        users
-            .filterNot(_.name.contains("[bot]"))
-            .flatTraverse(getStarred)
-        //repo
-          //.flatTraverse(getContributors)
-         // .map(sortContributorList)
-      )
-
-      private val sortContributorList = (c: List[User]) =>
-        c.groupBy(_.name)
-          .map(c => User(c._1, c._2.map(_.contributions).sum))
-          .toList
-          .sortBy(_.contributions)(Ordering.Int.reverse)
-
-      override val get: Kleisli[F, String, List[Repository]] =
-        getRepositories andThen getRepositoryContributors andThen getUsersStarredRepositories
-
-  */
     }
 }

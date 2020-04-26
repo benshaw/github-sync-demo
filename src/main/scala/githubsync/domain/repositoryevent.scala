@@ -1,5 +1,20 @@
 package githubsync.domain
 
+import cats.Applicative
+import cats.effect.Sync
+import githubsync.domain.starevent.{StarEvent, StarEventOwner, StarEventRepository}
+import io.circe.{Decoder, Encoder}
+import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import org.http4s.{EntityDecoder, EntityEncoder}
+import org.http4s.circe.jsonEncoderOf
+
+import cats.Applicative
+import cats.effect.Sync
+import io.circe.{Decoder, Encoder}
+import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import org.http4s.circe.{jsonOf, _}
+import org.http4s.{EntityDecoder, EntityEncoder}
+
 // generated from https://json2caseclass.cleverapps.io/
 object repositoryevent {
   case class RepositoryEventOwner(
@@ -104,4 +119,14 @@ object repositoryevent {
                               sender: RepositoryEventOwner
                             )
 
+  implicit val repoEventRepoEncoder  = deriveEncoder[RepositoryEventRepository]
+  implicit val repoEventOwnerEncoder: Encoder.AsObject[RepositoryEventOwner] = deriveEncoder[RepositoryEventOwner]
+
+  implicit private val repoEventEncoder: Encoder.AsObject[RepositoryEvent] = deriveEncoder[RepositoryEvent]
+  implicit private def repoEventEntityEncoder[F[_] : Applicative]: EntityEncoder[F,RepositoryEvent] = jsonEncoderOf
+
+  implicit val repoEventRepoDecoder: Decoder[RepositoryEventRepository] = deriveDecoder[RepositoryEventRepository]
+  implicit val repoEventOwnerDecoder: Decoder[RepositoryEventOwner] = deriveDecoder[RepositoryEventOwner]
+  implicit val repoEventDecoder: Decoder[RepositoryEvent] = deriveDecoder[RepositoryEvent]
+  implicit def repoEventEntityDecoder[F[_] : Sync]: EntityDecoder[F, RepositoryEvent] = jsonOf
 }
