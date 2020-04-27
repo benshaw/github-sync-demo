@@ -46,7 +46,7 @@ object githubapiinterpreter {
           content_type = "json",
           insecure_ssl = "1") //! set this to 0 if SSL is configured
 
-        val wh = GitHubWebHookRegistration(name = s"StarEvents${repo.name}",
+        val wh = GitHubWebHookRegistration(name = s"web",
           active = true,
           events = List("star"),
           config = c)
@@ -59,7 +59,7 @@ object githubapiinterpreter {
           content_type = "json",
           insecure_ssl = "1") //! set this to 0 if SSL is configured
 
-        val wh = GitHubWebHookRegistration(name = s"RepoEvents${repo.name}",
+        val wh = GitHubWebHookRegistration(name = s"web",
           active = true,
           events = List("repository"),
           config = c)
@@ -69,7 +69,7 @@ object githubapiinterpreter {
 
       private def webhook(webHook: GitHubWebHookRegistration, repo: Repository): F[GitHubWebHookResponse] = for {
         uri <- s"${config.apiUrl}/repos/${repo.owner}/${repo.name}/hooks".asUri()
-        r <- client.expect[GitHubWebHookResponse](Request[F](method = Method.POST, uri = uri, headers = authHeaders))
+        r <- client.expect[GitHubWebHookResponse](Request[F](method = Method.POST, uri = uri, headers = authHeaders).withEntity(webHook))
       } yield r
 
       implicit val ghsrd: Pipe[F, Json, GitHubStarredRepository] = jsonDecoder[F, GitHubStarredRepository]

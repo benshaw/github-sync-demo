@@ -7,13 +7,12 @@ import githubsync.ErrorHandler.{HttpErrorHandler, RoutesHttpErrorHandler}
 import githubsync.algebras.service._
 import githubsync.domain.repositoryevent._
 import githubsync.domain.starevent._
-import githubsync.domain.user._
-import io.circe.syntax._
-import org.http4s.{HttpRoutes, Response}
-import org.http4s.circe._
-import org.http4s.dsl.Http4sDsl
 import io.chrisdavenport.log4cats.Logger
 import io.circe.generic.auto._
+import io.circe.syntax._
+import org.http4s.circe._
+import org.http4s.dsl.Http4sDsl
+import org.http4s.{HttpRoutes, Response}
 
 object Routes {
 

@@ -122,8 +122,8 @@ object repositoryevent {
   implicit val repoEventRepoEncoder  = deriveEncoder[RepositoryEventRepository]
   implicit val repoEventOwnerEncoder: Encoder.AsObject[RepositoryEventOwner] = deriveEncoder[RepositoryEventOwner]
 
-  implicit private val repoEventEncoder: Encoder.AsObject[RepositoryEvent] = deriveEncoder[RepositoryEvent]
-  implicit private def repoEventEntityEncoder[F[_] : Applicative]: EntityEncoder[F,RepositoryEvent] = jsonEncoderOf
+  implicit val repoEventEncoder: Encoder.AsObject[RepositoryEvent] = deriveEncoder[RepositoryEvent]
+  implicit def repoEventEntityEncoder[F[_] : Applicative]: EntityEncoder[F,RepositoryEvent] = jsonEncoderOf
 
   implicit val repoEventRepoDecoder: Decoder[RepositoryEventRepository] = deriveDecoder[RepositoryEventRepository]
   implicit val repoEventOwnerDecoder: Decoder[RepositoryEventOwner] = deriveDecoder[RepositoryEventOwner]

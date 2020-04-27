@@ -29,7 +29,7 @@ object eventserviceinterpreter {
         val u = User(name = e.sender.login, repo = e.repository.name)
 
         e.action match {
-          case "created" => Logger[F].info(s"Adding new star gazer") *> persistentStorage.addStarGazers(List(u)).downStreamError()
+          case "created" => Logger[F].info(s"Adding new star gazer") *> persistentStorage.addStarGazers(List(u)).map(_.size).downStreamError()
           case "deleted" => Logger[F].info(s"Deleting star gazer") *> persistentStorage.deleteStarGazer(u).downStreamError()
           case e => F.raiseError(UnknownAction(e))
         }

@@ -12,7 +12,7 @@ object repository{
 
   case class RepositoryError(e: Throwable) extends Throwable
 
-  implicit private val repoEncoder: Encoder.AsObject[Repository] = deriveEncoder[Repository]
-  implicit private def repoEntityEncoder[F[_] : Applicative]: EntityEncoder[F, List[Repository]] = jsonEncoderOf
+  implicit val repoEncoder: Encoder.AsObject[Repository] = deriveEncoder[Repository]
+  implicit def repoEntityEncoder[F[_] : Applicative]: EntityEncoder[F, Repository] = jsonEncoderOf
 }
 

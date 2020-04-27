@@ -18,9 +18,9 @@ object github {
   }
 
   trait GitHubPersistentStoreAlgebra[F[_]] extends GitHubAlgebra[F]{
-    def addStarGazers[C[_] : Foldable : Monad](c: C[User]): F[Int]
+    def addStarGazers[C[_] : Foldable : Monad](c: C[User]): F[C[User]]
     def deleteStarGazer(u: User):F[Int]
-    def addRepositories[C[_] : Foldable : Monad](c: C[Repository]): F[Int]
+    def addRepositories[C[_] : Foldable : Monad](c: C[Repository]): F[C[Repository]]
     def deleteRepository(r: Repository): F[Int]
     def registered(org: String): Stream[F, String]
     def register(org: String): F[Int]

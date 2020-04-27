@@ -2,7 +2,7 @@ package githubsync.interpreters.service
 
 import cats.effect.{Concurrent, Sync}
 import cats.{Monad, MonadError}
-import fs2.Stream
+import fs2.{Chunk, INothing, Pure, Stream}
 import io.chrisdavenport.log4cats.Logger
 import githubsync.algebras.github._
 import githubsync.algebras.service._
@@ -53,28 +53,19 @@ object repositoryserviceinterpreter {
         _ <- Stream.eval(persistentStorage.register(org))
       } yield None
 
-      private def syncDbAndRegisterHooks(org: String): Stream[F, Int] = {
-        val repos: Stream[F, Repository] =
-          api.repositories(org)
+      private def syncDbAndRegisterHooks(org: String): Stream[F, User] = {
+        val chunk = 10
 
-        val gazers: Stream[F, User] =
-          repos.flatMap(r => api.stargazers(r))
+        val repos: Stream[F, Repository] = for{
+          repos <- api.repositories(org)
+          _ <- Stream.eval(api.registerForStarEvents(repos))
+          _ <- Stream.eval(api.registerForRepoEvents(repos))
+        } yield repos
 
-        val addGazers: Stream[F, Int] =
-          gazers.chunkN(10).flatMap(o => Stream.eval(persistentStorage.addStarGazers(o)))
-
-        val addRepos: Stream[F, Int] =
-          repos.chunkN(10).flatMap(o => Stream.eval(persistentStorage.addRepositories(o)))
-
-        val syncData: Stream[F, Int] =
-          addGazers.concurrently(addRepos)
-
-        val registerWebHooks: Stream[F, Unit] = for {
-          _ <- repos.map(api.registerForRepoEvents)
-          _ <- repos.map(api.registerForStarEvents)
-        } yield ()
-
-        syncData.concurrently(registerWebHooks)
+        repos
+          .chunkN(chunk)
+          .flatMap{c => Stream.evalUnChunk(persistentStorage.addRepositories(c))}
+          .flatMap{r => api.stargazers(r).chunkN(chunk).flatMap(o => Stream.evalUnChunk(persistentStorage.addStarGazers(o)))}
 
       }
     }

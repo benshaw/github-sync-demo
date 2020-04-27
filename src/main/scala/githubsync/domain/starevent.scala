@@ -116,8 +116,8 @@ object starevent {
                       )
   implicit val starEventRepoEncoder: Encoder[StarEventRepository] = deriveEncoder[StarEventRepository]
   implicit val starEventOwnerEncoder: Encoder[StarEventOwner] = deriveEncoder[StarEventOwner]
-  implicit private val starEventEncoder: Encoder[StarEvent] = deriveEncoder[StarEvent]
-  implicit private def starEventEntityEncoder[F[_] : Applicative]: EntityEncoder[F, StarEvent] = jsonEncoderOf
+  implicit val starEventEncoder: Encoder[StarEvent] = deriveEncoder[StarEvent]
+  implicit def starEventEntityEncoder[F[_] : Applicative]: EntityEncoder[F, StarEvent] = jsonEncoderOf
 
   implicit val starEventRepoDecoder: Decoder[StarEventRepository] = deriveDecoder[StarEventRepository]
   implicit val starEventOwnerDecoder: Decoder[StarEventOwner] = deriveDecoder[StarEventOwner]

@@ -1,36 +1,18 @@
 package githubsync
 
+import cats.{Foldable, Monad}
 import cats.effect.IO
-import fs2.{Pure, Stream}
-import githubsync.algebras.github._
+import fs2.{INothing, Pure, Stream}
+import githubsync.algebras.github.{GitHubAlgebra, _}
 import githubsync.domain.repository._
 import githubsync.domain.user.User
 import githubsync.interpreters.upstream.domain.{GitHubOwner, GitHubRepository, GitHubStarGazer, GitHubStarredRepository, GitHubStarredRepositoryOwner}
 
+import scala.collection.View.Empty
 import scala.util.Random
 
 
 object TestData {
-  //! This test API returns constant data
-  //! It has 3 repos each with 3 contributors
-  //! Contributor 1 has 1 contribution in each repo contributor 2  has 2 and so on
-  //! This should end up with contributor 1 having 3 total contributions contributor 2 having 6 and contributor 3 having 9
-  val testApi: GitHubApiAlgebra[IO] = new GitHubApiAlgebra[IO] {
-
-    def stargazers(repo: Repository): Stream[IO, User] =
-      starGazersR1
-
-    def repositories(org: String): Stream[IO, Repository] = {
-      repos
-    }
-
-    def registerForRepoEvents(repo: Repository) =
-      IO.pure(repo1)
-
-    def registerForStarEvents(repo: Repository) =
-      IO.pure(repo1)
-
-  }
 
   //! Raise errors instead of valid results
   val notFoundApi: GitHubApiAlgebra[IO] = new GitHubApiAlgebra[IO] {
@@ -97,6 +79,8 @@ object TestData {
     GitHubRepository(id = Random.nextDouble(), node_id = Random.nextString(5), name = name, full_name = name,
       owner = GitHubOwner(login = owner, id = Random.nextDouble(), node_id = Some(name)),
       `private` = false)
+
+
 
 
 }

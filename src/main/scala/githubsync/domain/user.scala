@@ -11,7 +11,7 @@ object user{
 
   case class UserError(e: Throwable) extends Throwable
 
-  implicit private val userEncoder: Encoder[User] = deriveEncoder[User]
-  implicit private def userEntityEncoder[F[_] : Applicative]: EntityEncoder[F, User] = jsonEncoderOf
+  implicit val userEncoder: Encoder[User] = deriveEncoder[User]
+  implicit def userEntityEncoder[F[_] : Applicative]: EntityEncoder[F, User] = jsonEncoderOf
 }
 

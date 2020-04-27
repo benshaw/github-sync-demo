@@ -67,7 +67,7 @@ object doobiepersisteninterpreter {
 
       }
 
-      def addRepositories[C[_] : Foldable : Monad](c: C[Repository]): F[Int] = {
+      def addRepositories[C[_] : Foldable : Monad](c: C[Repository]): F[C[Repository]] = {
         val insert = "insert into repositories (name, owner) values (?, ?)"
         val update: doobie.ConnectionIO[Int] = Update[(String, String)](insert,None,logHandler).updateMany(c.map(r => (r.name, r.owner)))
         update
@@ -78,7 +78,7 @@ object doobiepersisteninterpreter {
           .onError {
             case e =>
               Logger[F].error(s"Failed to insert repositories received error ${e.getMessage}")
-          }
+          }.map( _ => c)
       }
 
       //! registered name, initialized = false
@@ -143,7 +143,7 @@ object doobiepersisteninterpreter {
 
       }
 
-      def addStarGazers[C[_] : Foldable : Monad](c: C[User]): F[Int] = {
+      def addStarGazers[C[_] : Foldable : Monad](c: C[User]): F[C[User]] = {
         val insert = "insert into stargazers (name, repo) values (?, ?)"
         val update: doobie.ConnectionIO[Int] = Update[(String, String)](insert, None, logHandler).updateMany(c.map(r => (r.name, r.repo)))
         update
@@ -155,7 +155,7 @@ object doobiepersisteninterpreter {
             case e =>
               Logger[F].error(s"Failed to insert into stargazers received error ${e.getMessage}")
           }
-      }
+      }.map( _ => c)
 
 
     }
