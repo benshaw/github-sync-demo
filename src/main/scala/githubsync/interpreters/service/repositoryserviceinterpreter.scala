@@ -49,7 +49,7 @@ object repositoryserviceinterpreter {
       } yield Some(gazers)
 
       private def initialize(org: String): Stream[F, Option[User]] = for {
-        _ <- syncDbAndRegisterHooks(org)
+        _ <- syncDbAndRegisterHooks(org).drain
         _ <- Stream.eval(persistentStorage.register(org))
       } yield None
 
