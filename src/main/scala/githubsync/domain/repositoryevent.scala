@@ -1,11 +1,6 @@
 package githubsync.domain
 
-import cats.Applicative
-import cats.effect.Sync
-import githubsync.domain.starevent.{StarEvent, StarEventOwner, StarEventRepository}
-import io.circe.{Decoder, Encoder}
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import org.http4s.{EntityDecoder, EntityEncoder}
+
 import org.http4s.circe.jsonEncoderOf
 
 import cats.Applicative

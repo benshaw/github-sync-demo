@@ -13,7 +13,7 @@ object starevent {
 
   case class StarEventOwner(
                     login: String,
-                    id: Option[Double],
+                    id: Double,
                     node_id: Option[String],
                     avatar_url: Option[String],
                     gravatar_id: Option[String],
@@ -108,20 +108,41 @@ object starevent {
                                   default_branch: Option[String]
                        )
 
+  case class StarEventOrganization(
+                           login: String,
+                           id: Double,
+                           node_id: Option[String],
+                           url: Option[String],
+                           repos_url: Option[String],
+                           events_url: Option[String],
+                           hooks_url: Option[String],
+                           issues_url: Option[String],
+                           members_url: Option[String],
+                           public_members_url: Option[String],
+                           avatar_url: Option[String],
+                           description: Option[String]
+                         )
+
   case class StarEvent(
                         action: String,
                         starred_at: String,
                         repository: StarEventRepository,
+                        organization: StarEventOrganization,
                         sender: StarEventOwner
-                      )
+                           )
+
   implicit val starEventRepoEncoder: Encoder[StarEventRepository] = deriveEncoder[StarEventRepository]
+  implicit val starEventOrgEncoder: Encoder[StarEventOrganization] = deriveEncoder[StarEventOrganization]
   implicit val starEventOwnerEncoder: Encoder[StarEventOwner] = deriveEncoder[StarEventOwner]
   implicit val starEventEncoder: Encoder[StarEvent] = deriveEncoder[StarEvent]
+
   implicit def starEventEntityEncoder[F[_] : Applicative]: EntityEncoder[F, StarEvent] = jsonEncoderOf
 
   implicit val starEventRepoDecoder: Decoder[StarEventRepository] = deriveDecoder[StarEventRepository]
+  implicit val starEventOrgDecoder: Decoder[StarEventOrganization] = deriveDecoder[StarEventOrganization]
   implicit val starEventOwnerDecoder: Decoder[StarEventOwner] = deriveDecoder[StarEventOwner]
   implicit val starEventDecoder: Decoder[StarEvent] = deriveDecoder[StarEvent]
+
   implicit def starEventEntityDecoder[F[_] : Sync]: EntityDecoder[F, StarEvent] = jsonOf
 
 }
