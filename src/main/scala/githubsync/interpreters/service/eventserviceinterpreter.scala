@@ -25,7 +25,7 @@ object eventserviceinterpreter {
       }
 
       def starEvent(e: StarEvent): F[Int] = {
-        val u = User(name = e.sender.login, repo = e.repository.name)
+        val u = User(name = e.sender.login.toLowerCase, repo = e.repository.name.toLowerCase)
 
         e.action match {
           case "created" => Logger[F].info(s"Adding new star gazer") *> persistentStorage.addStarGazers(List(u)).map(_.size).downStreamError()
@@ -36,7 +36,7 @@ object eventserviceinterpreter {
       }
 
       def repoEvent(e: RepositoryEvent) :F[Int]= {
-        val r = Repository(e.repository.name, e.repository.owner.login)
+        val r = Repository(e.repository.name.toLowerCase, e.repository.owner.login.toLowerCase)
         e.action match {
           case "created" => Logger[F].info(s"Adding Repository") *> addRepo(r).downStreamError()
           case "deleted" => Logger[F].info(s"Deleting Repository") *> persistentStorage.deleteRepository(r).downStreamError()

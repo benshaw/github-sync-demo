@@ -32,13 +32,13 @@ object githubapiinterpreter {
       def repositories(org: String): Stream[F, Repository] = for {
         uri <- s"${config.apiUrl}/orgs/$org/repos".asUriStream()
         a <- client.getAllPages[GitHubRepository](Request[F](method = Method.GET, uri = uri, headers = authHeaders))
-        r = Repository(a.name, org)
+        r = Repository(a.name.toLowerCase(), org.toLowerCase)
       } yield r
 
       def stargazers(repo: Repository): Stream[F, User] = for {
         uri <- s"${config.apiUrl}/repos/${repo.owner}/${repo.name}/stargazers".asUriStream()
         a <- client.getAllPages[GitHubStarGazer](Request[F](method = Method.GET, uri = uri, headers = authHeaders))
-        r = User(a.login, repo.name)
+        r = User(a.login.toLowerCase, repo.name.toLowerCase)
       } yield r
 
       def registerForStarEvents(repo: Repository): F[Repository] = {
