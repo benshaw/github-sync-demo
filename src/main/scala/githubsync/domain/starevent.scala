@@ -123,13 +123,11 @@ object starevent {
                            description: Option[String]
                          )
 
-  case class StarEvent(
-                        action: String,
-                        starred_at: String,
+  case class StarEvent(action: String,
+                        starred_at: Option[String],
                         repository: StarEventRepository,
                         organization: StarEventOrganization,
-                        sender: StarEventOwner
-                           )
+                        sender: StarEventOwner)
 
   implicit val starEventRepoEncoder: Encoder[StarEventRepository] = deriveEncoder[StarEventRepository]
   implicit val starEventOrgEncoder: Encoder[StarEventOrganization] = deriveEncoder[StarEventOrganization]

@@ -22,19 +22,15 @@ Monitor stargazers of an org in GitHub
 ngrok http 8080
 ```
 
+## Setup
+* Setup the Db using the SQL found in table.sql 
+
 ## Running the app
-without env vars (default URL, no auth, disabled logging)
-
-i.e.
-```
-sbt ~reStart
-```
-
 with env vars (GH_TOKEN, GH_URL, LOG_APP, LOG_CLI, HOST)
 
 i.e.
 ```
- GH_TOKEN=${token} sbt ~reStart
+ GH_TOKEN={GitHubToken} LOG_CLI=true LOG_APP=true HOST=https://483f0adf.ngrok.io sbt ~reStart
 ```
 
 This will start the app on localhost with port 8080

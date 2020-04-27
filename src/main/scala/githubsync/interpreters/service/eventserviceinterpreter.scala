@@ -14,7 +14,6 @@ import io.chrisdavenport.log4cats.Logger
 
 object eventserviceinterpreter {
 
-
   def EventServiceInterpreter[F[_]: Logger](api: GitHubApiAlgebra[F], persistentStorage: GitHubPersistentStoreAlgebra[F])(implicit F: Sync[F], E: MonadError[F, Throwable]) =
     new EventService[F] {
 
